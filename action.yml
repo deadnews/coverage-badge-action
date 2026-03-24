@@ -1,0 +1,82 @@
+name: Coverage Badge
+description: Push a shields.io coverage badge to an orphan branch
+
+inputs:
+  file:
+    description: Path to coverage file
+    required: true
+  type:
+    description: Coverage format (go, lcov)
+    required: true
+  branch:
+    description: Orphan branch name for badge storage
+    required: false
+    default: badges
+
+outputs:
+  coverage:
+    description: Coverage percentage
+    value: ${{ steps.coverage.outputs.pct }}
+
+runs:
+  using: composite
+  steps:
+    - name: Parse coverage
+      id: coverage
+      shell: bash
+      env:
+        FILE: ${{ inputs.file }}
+        TYPE: ${{ inputs.type }}
+      run: |
+        if [[ ! -f "${FILE}" ]]; then
+          echo "::error::Coverage file not found: ${FILE}"
+          exit 1
+        fi
+
+        case "${TYPE}" in
+          go)
+            pct=$(awk 'NR>1{s+=$2; if($3>0) c+=$2} END{printf "%.1f", c/s*100}' "${FILE}")
+            ;;
+          lcov)
+            pct=$(awk -F: '/^LF:/{lf+=$2} /^LH:/{lh+=$2} END{printf "%.1f", lh/lf*100}' "${FILE}")
+            ;;
+          *)
+            echo "::error::Unknown coverage type: ${TYPE}. Use 'go' or 'lcov'."
+            exit 1
+            ;;
+        esac
+
+        int=${pct%.*}
+        if (( int >= 80 )); then color="brightgreen"
+        elif (( int >= 70 )); then color="green"
+        elif (( int >= 60 )); then color="yellowgreen"
+        elif (( int >= 50 )); then color="yellow"
+        elif (( int >= 40 )); then color="orange"
+        else color="red"
+        fi
+
+        echo "pct=${pct}" >> "${GITHUB_OUTPUT}"
+        echo "color=${color}" >> "${GITHUB_OUTPUT}"
+
+    - name: Push badge JSON
+      shell: bash
+      env:
+        BRANCH: ${{ inputs.branch }}
+        PCT: ${{ steps.coverage.outputs.pct }}
+        COLOR: ${{ steps.coverage.outputs.color }}
+      run: |
+        git config --local user.name "github-actions[bot]"
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+
+        git fetch origin "${BRANCH}" 2>/dev/null || true
+        git checkout -f -B "${BRANCH}" "origin/${BRANCH}" 2>/dev/null || git switch --orphan "${BRANCH}"
+
+        printf '{"schemaVersion":1,"label":"coverage","message":"%s%%","color":"%s"}\n' "${PCT}" "${COLOR}" > coverage.json
+
+        git add coverage.json
+        git diff --staged --quiet || git commit -m "chore: update coverage badge"
+        git push origin "${BRANCH}"
+
+branding:
+  icon: bar-chart-2
+  color: gray-dark

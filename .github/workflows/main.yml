@@ -1,0 +1,56 @@
+name: Main
+
+on:
+  push:
+    branches: [main]
+    tags: [v*.*.*]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  prek:
+    name: Prek
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run prek
+        uses: j178/prek-action@79f765515bd648eb4d6bb1b17277b7cb22cb6468 # v2.0.0
+
+  github-deploy:
+    name: Release to GitHub
+    if: github.ref_type == 'tag'
+    environment: github-releases
+    permissions:
+      contents: write
+    env:
+      CHANGELOG: https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md
+      PRERELEASE: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create GitHub Release
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "${GITHUB_REF_NAME}" \
+            --notes="See [the CHANGELOG](${CHANGELOG}) for more details." \
+            --draft="${PRERELEASE}" \
+            --prerelease="${PRERELEASE}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Move major and minor tags
+        if: env.PRERELEASE != 'true'
+        run: |
+          MAJOR="${GITHUB_REF_NAME%%.*}"
+          MINOR="${GITHUB_REF_NAME%.*}"
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+
+          git tag -fa "${MAJOR}" -m "chore(release): ${GITHUB_REF_NAME}"
+          git tag -fa "${MINOR}" -m "chore(release): ${GITHUB_REF_NAME}"
+          git push origin -f "refs/tags/${MAJOR}" "refs/tags/${MINOR}"
