@@ -1,5 +1,5 @@
 name: Coverage Badge
-description: Push a shields.io coverage badge to an orphan branch or gist
+description: Push a coverage badge to an orphan branch or gist
 
 inputs:
   file:

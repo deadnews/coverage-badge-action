@@ -1,11 +1,11 @@
 # coverage-badge-action
 
-> Push a [shields.io](https://shields.io) coverage badge to an orphan branch or gist
+> Push a coverage badge to an orphan branch or gist
 
 [![GitHub: Release](https://img.shields.io/github/v/release/deadnews/coverage-badge-action?logo=github&logoColor=white)](https://github.com/deadnews/coverage-badge-action/releases/latest)
 [![CI: Main](https://img.shields.io/github/actions/workflow/status/deadnews/coverage-badge-action/main.yml?branch=main&logo=github&logoColor=white&label=main)](https://github.com/deadnews/coverage-badge-action/actions/workflows/main.yml)
-![Coverage: branch](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/deadnews/coverage-badge-action/badges/coverage.json)
-![Coverage: gist](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/deadnews/eb0c3af607cb0c996bdcd7a5acc43b98/raw/coverage-badge-action-coverage.json)
+[![Coverage: branch](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/deadnews/coverage-badge-action/badges/coverage.json)](https://github.com/deadnews/coverage-badge-action)
+[![Coverage: gist](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/deadnews/eb0c3af607cb0c996bdcd7a5acc43b98/raw/coverage-badge-action-coverage.json)](https://github.com/deadnews/coverage-badge-action)
 
 ## Usage
 
