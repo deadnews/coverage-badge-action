@@ -7,6 +7,8 @@
 [![Coverage: branch](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/deadnews/coverage-badge-action/badges/coverage.json)](https://github.com/deadnews/coverage-badge-action)
 [![Coverage: gist](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/deadnews/eb0c3af607cb0c996bdcd7a5acc43b98/raw/coverage-badge-action-coverage.json)](https://github.com/deadnews/coverage-badge-action)
 
+**[Usage](#usage)** • **[Inputs](#inputs)** • **[Examples](#examples)**
+
 ## Usage
 
 ### Orphan branch (default)
