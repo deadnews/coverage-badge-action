@@ -22,7 +22,6 @@ jobs:
 
   test:
     name: Test
-    environment: badges
     permissions:
       contents: write
     runs-on: ubuntu-latest
