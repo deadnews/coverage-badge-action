@@ -1,5 +1,5 @@
 name: Coverage Badge
-description: Push a shields.io coverage badge to an orphan branch
+description: Push a shields.io coverage badge to an orphan branch or gist
 
 inputs:
   file:
@@ -9,14 +9,12 @@ inputs:
     description: Coverage format (go, lcov)
     required: true
   branch:
-    description: Orphan branch name for badge storage
-    required: false
+    description: Orphan branch name
     default: badges
-
-outputs:
-  coverage:
-    description: Coverage percentage
-    value: ${{ steps.coverage.outputs.pct }}
+  gist-id:
+    description: Gist ID (enables gist mode)
+  gist-token:
+    description: PAT with gist scope
 
 runs:
   using: composite
@@ -55,15 +53,16 @@ runs:
         else color="red"
         fi
 
-        echo "pct=${pct}" >> "${GITHUB_OUTPUT}"
-        echo "color=${color}" >> "${GITHUB_OUTPUT}"
+        badge=$(printf '{"schemaVersion":1,"label":"coverage","message":"%s%%","color":"%s"}' "${pct}" "${color}")
 
-    - name: Push badge JSON
+        echo "badge=${badge}" >> "${GITHUB_OUTPUT}"
+
+    - name: Upload badge to orphan branch
+      if: ${{ !inputs.gist-id }}
       shell: bash
       env:
         BRANCH: ${{ inputs.branch }}
-        PCT: ${{ steps.coverage.outputs.pct }}
-        COLOR: ${{ steps.coverage.outputs.color }}
+        BADGE: ${{ steps.coverage.outputs.badge }}
       run: |
         git config --local user.name "github-actions[bot]"
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
@@ -71,12 +70,26 @@ runs:
         git fetch origin "${BRANCH}" 2>/dev/null || true
         git checkout -f -B "${BRANCH}" "origin/${BRANCH}" 2>/dev/null || git switch --orphan "${BRANCH}"
 
-        printf '{"schemaVersion":1,"label":"coverage","message":"%s%%","color":"%s"}\n' "${PCT}" "${COLOR}" > coverage.json
+        printf '%s' "${BADGE}" > coverage.json
 
         git add coverage.json
         git diff --staged --quiet || git commit -m "chore: update coverage badge"
         git push origin "${BRANCH}"
 
-branding:
-  icon: bar-chart-2
-  color: gray-dark
+    - name: Upload badge to gist
+      if: ${{ inputs.gist-id }}
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.gist-token }}
+        GIST_ID: ${{ inputs.gist-id }}
+        BADGE: ${{ steps.coverage.outputs.badge }}
+      run: |
+        if [[ -z "${GH_TOKEN}" ]]; then
+          echo "::error::gist-token is required when gist-id is set"
+          exit 1
+        fi
+
+        REPO="${GITHUB_REPOSITORY#*/}"
+
+        gh api --method PATCH "/gists/${GIST_ID}" \
+          -f "files[${REPO}-coverage.json][content]=${BADGE}"
