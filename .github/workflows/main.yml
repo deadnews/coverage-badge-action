@@ -28,19 +28,19 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Test orphan branch
+      - name: Test gist
         uses: ./
         with:
           file: test/coverage.txt
           type: go
+          gist-id: ${{ vars.GIST_ID }}
+          gist-token: ${{ secrets.GIST_TOKEN }}
 
-      - name: Test gist
+      - name: Test orphan branch
         uses: ./
         with:
           file: test/lcov.info
           type: lcov
-          gist-id: ${{ vars.GIST_ID }}
-          gist-token: ${{ secrets.GIST_TOKEN }}
 
   github-deploy:
     name: Release to GitHub
