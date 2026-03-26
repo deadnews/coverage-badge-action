@@ -20,9 +20,32 @@ jobs:
       - name: Run prek
         uses: j178/prek-action@79f765515bd648eb4d6bb1b17277b7cb22cb6468 # v2.0.0
 
+  test:
+    name: Test
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Test gist
+        uses: ./
+        with:
+          file: test/coverage.txt
+          type: go
+          gist-id: ${{ vars.GIST_ID }}
+          gist-token: ${{ secrets.GIST_TOKEN }}
+
+      - name: Test orphan branch
+        uses: ./
+        with:
+          file: test/lcov.info
+          type: lcov
+
   github-deploy:
     name: Release to GitHub
     if: github.ref_type == 'tag'
+    needs: [prek, test]
     environment: github-releases
     permissions:
       contents: write
