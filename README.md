@@ -22,6 +22,7 @@ permissions:
 steps:
   - name: Upload coverage
     uses: deadnews/coverage-badge-action@v1
+    if: github.event_name == 'push'
     with:
       file: coverage.txt
       type: go
@@ -39,6 +40,7 @@ Pushes `REPO-coverage.json` to a gist. One gist can store badges for all your re
 steps:
   - name: Upload coverage
     uses: deadnews/coverage-badge-action@v1
+    if: github.event_name == 'push'
     with:
       file: coverage.txt
       type: go
