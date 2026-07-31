@@ -1,4 +1,4 @@
-.PHONY: all clean default update check pc test
+.PHONY: alpha bumped check pc release update
 
 default: check
 
@@ -7,13 +7,18 @@ pc:
 	prek run -a
 
 update:
-	prek auto-update --freeze
-	pinact run -update
+	prek update
+	pinact run --update
 
 bumped:
 	git cliff --bumped-version
 
-# make release TAG=$(git cliff --bumped-version)-alpha.0
+# make alpha TAG=$(git cliff --bumped-version)-alpha.0
+alpha: check
+	git tag -a $(TAG) -m "chore(release): $(TAG)"
+	git push origin $(TAG)
+
+# make release TAG=$(git cliff --bumped-version)
 release: check
 	git cliff -o CHANGELOG.md --tag $(TAG)
 	prek run --files CHANGELOG.md || prek run --files CHANGELOG.md
