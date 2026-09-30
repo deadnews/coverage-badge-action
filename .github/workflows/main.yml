@@ -29,7 +29,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Test gist
-        uses: ./
+        uses: $/
         with:
           file: test/coverage.txt
           type: go
@@ -37,7 +37,7 @@ jobs:
           gist-token: ${{ secrets.GIST_TOKEN }}
 
       - name: Test orphan branch
-        uses: ./
+        uses: $/
         with:
           file: test/lcov.info
           type: lcov
